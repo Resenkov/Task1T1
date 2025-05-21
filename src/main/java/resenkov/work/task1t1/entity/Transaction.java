@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Getter
@@ -19,8 +20,8 @@ public class Transaction {
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "account_id", referencedColumnName = "id")
-    private Client client;
+    private Account account;
 
     private BigDecimal sum;
-    private Date date;
+    private LocalDateTime localDateTime;
 }

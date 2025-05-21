@@ -33,8 +33,8 @@ public class AccountService {
                 new ResponseStatusException(HttpStatus.NOT_FOUND, "Entity with id `%s` not found".formatted(id)));
     }
 
-    public List<Account> getMany(List<Long> ids) {
-        return accountRepository.findAllById(ids);
+    public List<Account> getMany(List <Long> id) {
+        return accountRepository.findAllById(id);
     }
 
     public Account create(Account account) {

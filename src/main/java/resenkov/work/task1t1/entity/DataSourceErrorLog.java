@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Setter
 @Entity
@@ -24,4 +26,6 @@ public class DataSourceErrorLog {
     private String signatureMethod;
 
     private String message;
+
+    private LocalDateTime timestamp;
 }

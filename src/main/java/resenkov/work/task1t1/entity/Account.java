@@ -28,7 +28,3 @@ public class Account {
 }
 
 
-enum BalanceType{
-    DEBIT,
-    CREDIT
-}
