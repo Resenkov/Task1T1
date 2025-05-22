@@ -10,6 +10,7 @@ import resenkov.work.task1t1.entity.Transaction;
 import resenkov.work.task1t1.repository.AccountRepository;
 import resenkov.work.task1t1.repository.ClientRepository;
 import resenkov.work.task1t1.repository.TransactionRepository;
+import resenkov.work.task1t1.service.ClientService;
 import resenkov.work.task1t1.service.ErrorService;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -21,14 +22,16 @@ public class TestGenerate implements CommandLineRunner {
     private final AccountRepository accountRepo;
     private final TransactionRepository txRepo;
     private final ErrorService errorService;
+    private final ClientService clientService;
 
     public TestGenerate(ClientRepository clientRepo,
                         AccountRepository accountRepo,
-                        TransactionRepository txRepo, ErrorService errorService) {
+                        TransactionRepository txRepo, ErrorService errorService, ClientService clientService) {
         this.clientRepo = clientRepo;
         this.accountRepo = accountRepo;
         this.txRepo = txRepo;
         this.errorService = errorService;
+        this.clientService = clientService;
     }
 
     @Override
@@ -60,11 +63,24 @@ public class TestGenerate implements CommandLineRunner {
             }
         }
 
-        System.out.println(">> Генератор: сейчас будет искусственная ошибка для теста аспекта");
+        System.out.println(">> 0) Сеем клиента в базу id=1");
+        Client seed = new Client();
+        seed.setFirstName("Тест");
+        seed.setLastName("Клиент");
+        seed.setMiddleName("Demo");
+        seed = clientRepo.save(seed);
+        System.out.println("\n>> 1) Демонстрация @Cached");
+        clientService.getClient(seed.getId());
+        clientService.getClient(seed.getId());
+
+        System.out.println("\n>> 2) Демонстрация @Metric");
+        errorService.slow();
+
+        System.out.println("\n>> 3) Демонстрация @LogDataError");
         try {
             errorService.triggerError();
-        }catch (Exception e) {
-            System.out.println(">> Генератор: Искусственная ошибка обработана");
+        } catch (Exception ignored) {
+            System.out.println(">> Искусственная ошибка обработана");
         }
     }
 }
