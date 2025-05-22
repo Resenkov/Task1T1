@@ -31,6 +31,7 @@ public class DataSourceErrorLoggingAspect {
             return pjp.proceed();
         } catch (Exception ex) {
             MethodSignature sig = (MethodSignature) pjp.getSignature();
+            System.out.println("Вызван метод: " + sig.getName() + " и завершился с ошибкой " + ex);
             DataSourceErrorLog log = new DataSourceErrorLog();
             log.setMessage(ex.getMessage());
             log.setStackTrace(getStackTrace(ex));
