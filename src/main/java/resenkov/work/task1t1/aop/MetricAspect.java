@@ -2,26 +2,31 @@ package resenkov.work.task1t1.aop;
 
 
 import jakarta.transaction.Transactional;
+import org.apache.kafka.clients.producer.ProducerRecord;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 import resenkov.work.task1t1.entity.TimeLimitLog;
 import resenkov.work.task1t1.repository.TimeLimitLogRepository;
 
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 
 @Aspect
 @Component
 public class MetricAspect {
-
+    private final String TOPIC_NAME = "t1_demo_metrics";
     private final TimeLimitLogRepository timeLimitLogRepository;
     private final long timeLimit;
-    public MetricAspect(TimeLimitLogRepository timeLimitLogRepository,@Value("${app.metric.timeLimit}") long timeLimit) {
+    private final KafkaTemplate<String, String> kafkaTemplate;
+    public MetricAspect(TimeLimitLogRepository timeLimitLogRepository, @Value("${app.metric.timeLimit}") long timeLimit, KafkaTemplate<String, String> kafkaTemplate) {
         this.timeLimitLogRepository = timeLimitLogRepository;
         this.timeLimit = timeLimit;
+        this.kafkaTemplate = kafkaTemplate;
     }
 
     @Around("@annotation(resenkov.work.task1t1.aop.Metric)")
@@ -38,8 +43,19 @@ public class MetricAspect {
             log.setMethodName(sig.getName());
             log.setDuration(time);
             log.setTimestamp(LocalDateTime.now());
-            timeLimitLogRepository.save(log);
+            try {
+                sendMetricMessage(pjp);
+            } catch (Exception e) {
+                timeLimitLogRepository.save(log);
+            }
         }
         return result;
+    }
+
+    private void sendMetricMessage(ProceedingJoinPoint pjp) {
+            String message = String.format("Метод %s превысил лимит времени!", pjp.getSignature());
+            ProducerRecord<String, String> record = new ProducerRecord<>(TOPIC_NAME, message);
+            record.headers().add("errorType", "METRICS".getBytes(StandardCharsets.UTF_8));
+            kafkaTemplate.send(record);
     }
 }
