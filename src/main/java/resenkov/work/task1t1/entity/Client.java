@@ -20,6 +20,8 @@ public class Client {
     @NotNull
     private String lastName;
 
+    private Long clientId;
+
     @NotNull
     private String firstName;
     @NotNull
